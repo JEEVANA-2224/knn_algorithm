@@ -1,26 +1,35 @@
 import streamlit as st
-import joblib
 import numpy as np
+import joblib
+import os
 
-# Load trained model
-AI_model = joblib.load("Social_Network_Streamlit.pkl")
+# ---------------- Page Config ----------------
+st.set_page_config(
+    page_title="Social Network Ads Prediction",
+    page_icon="🤖",
+    layout="centered"
+)
 
-# App title
-st.title("🛒 Purchase Prediction App")
+st.title("🤖 Social Network Purchase Prediction")
+st.write("Predict whether a user will **purchase a product** using KNN.")
 
-st.write("Predict whether a person will purchase or not")
+# ---------------- Load Model & Scaler ----------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# User inputs
-age = st.number_input("Enter Age", min_value=18, max_value=100, value=25)
-salary = st.number_input("Enter Salary", min_value=10000, max_value=200000, value=50000)
+model = joblib.load(os.path.join(BASE_DIR, "student_final_model.pkl"))
+scaler = joblib.load(os.path.join(BASE_DIR, "student_scaler.pkl"))
 
-# Predict button
+# ---------------- User Inputs ----------------
+age = st.number_input("Age", min_value=18, max_value=100, value=47)
+salary = st.number_input("Estimated Salary", min_value=1000, max_value=200000, value=25000)
+
+# ---------------- Prediction ----------------
 if st.button("Predict"):
-    prediction = AI_model.predict([[age, salary]])
+    input_data = np.array([[age, salary]])
+    input_scaled = scaler.transform(input_data)  # 🔥 VERY IMPORTANT
+    prediction = model.predict(input_scaled)
 
-    if prediction[0] == 0:
-        st.error("❌ PERSON DID NOT PURCHASE")
+    if prediction[0] == 1:
+        st.success("✅ User will PURCHASE the product")
     else:
-        st.success("✅ PERSON PURCHASED")
-
-
+        st.error("❌ User will NOT purchase the product")
